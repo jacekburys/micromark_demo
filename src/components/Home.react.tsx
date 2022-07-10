@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 
 import { Container, Row, Col, FormControl } from "react-bootstrap";
 import JSONPretty from "react-json-pretty";
 
 import { fromMarkdown } from "mdast-util-from-markdown";
+import { visit } from "unist-util-visit";
+import { Node } from "unist";
+
+import { gfmStrikethrough } from "micromark-extension-gfm-strikethrough";
+import { gfmStrikethroughFromMarkdown } from "mdast-util-gfm-strikethrough";
 
 interface Props {}
 
@@ -23,7 +28,30 @@ export const Home = ({}: Props) => {
             "\n"
     );
 
-    const temp = fromMarkdown(content);
+    const mdast = useMemo(
+        () =>
+            fromMarkdown(content, {
+                extensions: [gfmStrikethrough()],
+                mdastExtensions: [gfmStrikethroughFromMarkdown],
+            }),
+        [content]
+    );
+
+    const ranges = useMemo(() => {
+        const res: any[] = [];
+
+        visit(mdast, (node: Node) => {
+            switch (node.type) {
+                case "delete":
+                    res.push({
+                        type: "strikethrough",
+                        position: node.position,
+                    });
+            }
+        });
+
+        return res;
+    }, [mdast]);
 
     return (
         <Container>
@@ -37,7 +65,10 @@ export const Home = ({}: Props) => {
                     ></FormControl>
                 </Col>
                 <Col style={{ overflowY: "scroll" }}>
-                    <JSONPretty data={temp}></JSONPretty>
+                    <JSONPretty data={mdast} />
+                </Col>
+                <Col style={{ overflowY: "scroll" }}>
+                    <JSONPretty data={ranges} />
                 </Col>
             </Row>
         </Container>
