@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 
 import { Container, Row, Col, FormControl } from "react-bootstrap";
+import JSONPretty from "react-json-pretty";
+
+import { fromMarkdown } from "mdast-util-from-markdown";
 
 interface Props {}
 
@@ -20,6 +23,8 @@ export const Home = ({}: Props) => {
             "\n"
     );
 
+    const temp = fromMarkdown(content);
+
     return (
         <Container>
             <Row>
@@ -31,7 +36,9 @@ export const Home = ({}: Props) => {
                         onChange={(e) => setContent(e.target.value)}
                     ></FormControl>
                 </Col>
-                <Col style={{ overflowY: "scroll" }}>{/* TODO */}</Col>
+                <Col style={{ overflowY: "scroll" }}>
+                    <JSONPretty data={temp}></JSONPretty>
+                </Col>
             </Row>
         </Container>
     );
