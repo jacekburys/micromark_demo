@@ -10,10 +10,21 @@ import { Node } from "unist";
 import { gfmStrikethrough } from "micromark-extension-gfm-strikethrough";
 import { gfmStrikethroughFromMarkdown } from "mdast-util-gfm-strikethrough";
 
+import breaks from "../extensions/breaks";
+
+import { blockQuote } from "micromark-core-commonmark";
+import { codes } from "micromark-util-symbol/codes.js";
+
+import {
+    quoteLineExtension,
+    quoteLineFromMarkdownExtension,
+} from "../extensions/quoteLine";
+
 interface Props {}
 
 export const Home = ({}: Props) => {
     const [content, setContent] = useState<string>(
+        /*
         "*bold* and _italic_ and ~strikethrough~  \n" +
             "**normal** and __normal__  \n" +
             "\n" +
@@ -26,16 +37,25 @@ export const Home = ({}: Props) => {
             "```\n" +
             "this should be a link [google](https://www.google.com)  \n" +
             "\n"
+        */
+        "> quote\n" + "hello\n" + "there\n"
     );
+
+    const disable = { disable: { null: ["blockQuote"] } };
 
     const mdast = useMemo(
         () =>
             fromMarkdown(content, {
-                extensions: [gfmStrikethrough()],
-                mdastExtensions: [gfmStrikethroughFromMarkdown],
+                extensions: [disable, quoteLineExtension, gfmStrikethrough()],
+                mdastExtensions: [
+                    quoteLineFromMarkdownExtension,
+                    gfmStrikethroughFromMarkdown,
+                ],
             }),
-        [content]
+        [content, disable]
     );
+
+    breaks()(mdast);
 
     const ranges = useMemo(() => {
         const res: any[] = [];
